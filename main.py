@@ -16,7 +16,15 @@ def on_close(ws):
 
 def on_message(ws, message):
         json_message = json.loads(message)
-        pprint.pprint(json_message)
+        #this si where the bulk of the stuffffffff is gonne happen
+        candle = json_message['k']
+        # inside candle json object 'k' we have all of the properties
+        is_candle_closed = candle['x']
+        close = candle['c']
+        close = round(float(close)), 2
+
+        if is_candle_closed:
+            print(f'candle closed at {close}')
 
 def on_error(ws, error):
         print(error)
