@@ -1,110 +1,90 @@
-import websocket, json, talib
+# import websocket
+# import json
+import pandas as pd
 import numpy as np
 import config
 from binance.enums import *
 import binance.client
+import time
+# import pprint
 
 Client = binance.client.Client
 
-RSI_PERIOD = 14
-RSI_oversold = 30
-RSI_overbought = 70
-COIN = 'uniusd'
+MOMENTUM_PERIOD = 3
+COIN = 'ethusd'
 candle_interval = '1m'
+coins = []
 
-TRADE_SYMBOL = 'UNIUSD'
-TRADE_QUANTITY = 0.5
-
-
-# I will use this to determine if my bot has already bought or not. I don't want to buy every minute.
-# I just want to buy once.
-
-in_position = False
+TRADE_SYMBOL = COIN.upper()
+TRADE_QUANTITY = 0.01
 
 # this gets the keys from config.py file which is .gitignored for my safety.
-client = Client(config.API_KEY, config.API_SECRET, tld = 'us')
+client = Client(config.API_KEY, config.API_SECRET, tld='us')
 
-SOCKET = f'wss://stream.binance.us:9443/ws/{COIN}@kline_{candle_interval}'
 
 # in order of params this function says buy/sell quantity of symbol with order type
-def order(side, quantity, symbol, type = ORDER_TYPE_MARKET):
+def order(side, quantity, symbol, order_type=ORDER_TYPE_MARKET):
     try:
+        my_order = client.create_order(symbol=symbol, side=side, type=order_type, quantity=quantity)
+        print(my_order)
         print('sending order')
-        order = client.create_order(symbol = symbol,
-                                    side = side,
-                                    type = type,
-                                    quantity = quantity)
-        print(order)
-    except Exception as e:
+    except:
         return False
 
     return True
 
 
-def on_open(ws):
-    print('connection opened')
+# The following function gets newest price historical_data of the coins I want to check
+def coin_prices():
+    coin_array = []
+    ticker_array = []
+    tickers = client.get_all_tickers()
+
+    for ticker in tickers:
+        ticker_array.append(list(ticker.values()))
+    # I specifically only want the coins that are 'coin/usd'
+    for coin, price in ticker_array:
+        if coin.count('USD') == 1 and coin[-3:] == 'USD' and coin[-4] != 'B':
+            if float(price) <= 1:
+                coin_array.append([coin, round(float(price), 4)])
+            elif 1 < float(price) < 2:
+                coin_array.append([coin, round(float(price), 3)])
+            else:
+                coin_array.append([coin, round(float(price), 2)])
+
+    return coin_array
+
+momentum_closes = []
+in_position = False
+
+first_coin_array = coin_prices()
+history = pd.DataFrame(first_coin_array)
+history = history.transpose()
+history = history.drop(1, axis=0)
 
 
-def on_close(ws):
-    print('connection closed')
+def shaka():
+    # run the coin_prices fxn and get a price list
+    global history
+    global in_position
+
+    coin_array = coin_prices()
+    price_list = [price for coin, price in coin_array]
+    history = history.append([price_list])
+    # print(history)
+    in_position = False
+
+    for index, price in enumerate(price_list):
+        if len(history) > MOMENTUM_PERIOD:
+            # the following gets momentum as a percentage and creates a list of them
+            coin_momentum = ((price - history.iat[-MOMENTUM_PERIOD, index]) / history.iat[-MOMENTUM_PERIOD, index])*100
+            momentum_closes.append(round(coin_momentum, 2))
+            if coin_momentum > 1.0:
+                print(history.iat[0, index], round(coin_momentum, 2))
+
+    print('no coins have that much momentum')
 
 
-# we will use this list to apply RSI indicator
-closes = []
-
-
-def on_message(ws, message):
-    json_message = json.loads(message)
-    # this is where the bulk of the stuffffffff is gonne happen
-    candle = json_message['k']
-    # inside candle json object 'k' we have all of the properties
-    is_candle_closed = candle['x']
-    close = candle['c']
-    close = round(float(close), 2)
-
-    if is_candle_closed:
-        print(f'candle closed at {close}')
-        closes.append(close)
-        print(closes)
-
-        if len(closes) >= RSI_PERIOD:
-            np_closes = np.array(closes)
-            rsi = talib.RSI(np_closes, RSI_PERIOD)
-
-            last_rsi = rsi[-1]
-            print(f'the last rsi is {last_rsi}')
-
-            if last_rsi > RSI_overbought:
-                if in_position:
-                    print('sell that shit!!!')
-                    # binance API sell logic
-                    order_succeeded = order(SIDE_SELL, TRADE_QUANTITY, TRADE_SYMBOL)
-
-                    if order_succeeded:
-                        in_position = False
-                else:
-                    print('nothing to sell here.')
-
-            if last_rsi < RSI_oversold:
-                if in_position:
-                    print("oversold but you've already bought it.")
-                else:
-                    order_succeeded = order(SIDE_BUY, TRADE_QUANTITY, TRADE_SYMBOL)
-                    if order_succeeded:
-                        in_position = True
-                    print('buy that shit!')
-                    # TELL BINANCE API TO BUY
-
-
-def on_error(ws, error):
-    print(error)
-
-
-ws = websocket.WebSocketApp(SOCKET,
-                            on_open=on_open,
-                            on_error=on_error,
-                            on_message=on_message,
-                            on_close=on_close
-                            )
-
-ws.run_forever()
+while True:
+    shaka()
+    time.sleep(120)

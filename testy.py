@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import time as t
 
 
 stupid = '3456.789'
@@ -35,11 +36,5 @@ def lcs(X, Y):
     return L[m][n]
 # end of function lcs
 
-arr1 = [1, 2, 3, 4, 5]
-array2 = reduce(lambda x, y: x+y, arr1)
-print(array2)
-
-
-
-
 lcs(item1, item2)
+
