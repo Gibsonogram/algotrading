@@ -2,14 +2,13 @@ import pandas as pd
 
 hist_data = pd.DataFrame()
 
-binance_high_MC_coins = ['BTC', 'ETH', 'LTC', 'ADA', 'DASH', 'EOS', 'LINK', 'NEO', 'QTUM', 'XLM', 'ZEC']
+binance_high_MC_coins = ['BTC', 'ETC', 'ETH', 'LTC', 'ADA', 'DASH', 'EOS', 'LINK', 'NEO', 'QTUM', 'XLM', 'ZEC']
 for coin in binance_high_MC_coins:
     buttstick = pd.read_csv(f'historical_data/binance_high_MC_coins/Binance_{coin}USDT_1h.csv')
     hist_data.insert(0, coin, buttstick['close'])
 
 # cleaning and reformatting data
 hist_data['date'] = buttstick['date']
-hist_data = hist_data.iloc[::-1].reset_index(drop=True)
 in_position = False
 print(hist_data)
 
