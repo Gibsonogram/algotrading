@@ -149,7 +149,7 @@ def shaka(betting_money, sell_percent):
 
                 # if there is acceleration and that coin is not bitcoin
                 if top_coin_change >= top_coin_mov >= 0:
-                    do_not_check = ['BTCUSD', 'XRPUSD']
+                    do_not_check = ['BTCUSD', 'XRPUSD', 'DAIUSD']
                     if top_coin not in do_not_check:
                         top_coin_price = false_history.iat[len(false_history) - 1, col]
                         buy_column = false_history.columns[col]
