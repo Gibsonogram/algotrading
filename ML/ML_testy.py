@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import time as t
 from sklearn import datasets

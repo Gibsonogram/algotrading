@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title>coinview</title>
+        <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    </head>
+
+    <body>
+        <h1>Trades</h1>
+        <!-- The following div is where the chart will be stored, chart is gotten from the file chart.js-->
+        <div id="chart"></div>
+
+        <h3>Settings</h3>
+        <div id='settings'>
+            <!-- I want this to hold different indicators and things the user is interested in-->
+            <input type="checkbox" /> RSI  
+            <input type="text" name="rsi_length" placeholder="14"/>
+            Overbought
+            <input type="text" id="rsi_overbought" name="rsi_overbought" placeholder="70"/>
+            Oversold
+            <input type="text" id="rsi_oversold" name="rsi_oversold" placeholder="30"/>
+
+        </div>
+
+        <div id='trades'></div>
+        
+        <!-- <script>
+            var binanceSocket = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
+            
+            var tradeDiv = document.getElementById('trades')
+            
+            console.log(binanceSocket)
+
+            binanceSocket.onmessage = function (event) {
+                console.log(event.data);
+
+                var messageObject = JSON.parse(event.data)
+
+                tradeDiv.append(messageObject.p)
+            }
+
+        </script> -->
+        <script src = "chart.js">
+
+        </script>
+    </body>
+
+</html>
