@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>coinview</title>
+        <title>{{ title }}</title>
         <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     </head>
 
@@ -9,8 +9,8 @@
         <!-- The following div is where the chart will be stored, chart is gotten from the file chart.js-->
         <div id="chart"></div>
 
-        <h3>Settings</h3>
         <div id='settings'>
+            <h2>Settings</h2>
             <!-- I want this to hold different indicators and things the user is interested in-->
             <input type="checkbox" /> RSI  
             <input type="text" name="rsi_length" placeholder="14"/>
@@ -18,6 +18,23 @@
             <input type="text" id="rsi_overbought" name="rsi_overbought" placeholder="70"/>
             Oversold
             <input type="text" id="rsi_oversold" name="rsi_oversold" placeholder="30"/>
+
+        </div>
+
+        <div id="my_balances">
+            <h2>Balances</h2>
+            <table>
+                {% for balance in my_balances %}   
+                <tr>
+                    <td>
+                        {{ balance['asset'] }}
+                    </td>
+                    <td>
+                        {{ balance['free'] }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>                 
 
         </div>
 
@@ -39,9 +56,7 @@
             }
 
         </script> -->
-        <script src = "chart.js">
-
-        </script>
+        <script src = "{{ url_for('static', filename='chart.js') }}"></script>
     </body>
 
 </html>
