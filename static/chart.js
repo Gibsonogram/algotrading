@@ -1,5 +1,5 @@
-/* I want to make this js file for charting with the js library 'lightweight-charts' 
-Also this is quite exciting, I'm coding in jaascript. I guess this is how you do multiline comments in js.
+/* 
+I want to make this js file for charting with the js library 'lightweight-charts' 
 
 */
 
