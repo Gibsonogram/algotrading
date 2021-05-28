@@ -4,7 +4,9 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from ML_algos import LogisticRegression
+import talib as tl
+from ML.ML_algos import LogisticRegression
+
 
 
 bc = datasets.load_breast_cancer()
