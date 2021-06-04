@@ -1,3 +1,4 @@
+from matplotlib.colors import Normalize
 import numpy as np
 from collections import Counter
 
@@ -92,11 +93,4 @@ class LogisticRegression:
 
     def _sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
-
-
-class ARIMA:
-    def __init__(self):
-        pass
-    
-        
 
