@@ -24,7 +24,6 @@ print(len(candlesticks))
 BTC_1_day_testarooni.close()
 
 
-""" 
 class RSIStrategy(bt.Strategy):
     def __init__(self):
         self.rsi = bt.talib.RSI(self.data, period=14)
@@ -46,6 +45,3 @@ cerebro.addstrategy(RSIStrategy)
 # cerebro.run()
 
 # cerebro.plot()
-
-
- """
