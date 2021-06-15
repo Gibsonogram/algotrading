@@ -30,23 +30,38 @@ var chart = LightweightCharts.createChart(document.getElementById('chart'), {
 });
 
 var candleSeries = chart.addCandlestickSeries({
-  upColor: 'rgba(0, 255, 0, 0.7)',
+  upColor: 'rgba(0, 240, 0, 0.7)',
   downColor: '#ee0000',
-  borderDownColor: 'rgba(255, 0, 0, 1)',
-  borderUpColor: 'rgba(0, 255, 0, 1)',
-  wickDownColor: 'rgba(255, 0, 0, 1)',
-  wickUpColor: 'rgba(0, 255, 0, 1)',
+  borderDownColor: 'rgba(240, 0, 0, 1)',
+  borderUpColor: 'rgba(0, 240, 0, 1)',
+  wickDownColor: 'rgba(240, 0, 0, 1)',
+  wickUpColor: 'rgba(0, 240, 0, 1)',
 });
 
+var coin;
+
+
+// this is how we get the older history data, stored at this url
+// importantly, it fetches whatever is at that url, so we need not change anything here
+// we need only consider what is at that url
+// so we store a coin name at the url and use this as a variable to use for the live data
 fetch('http://127.0.0.1:5000/history')
 	.then((r) => r.json())
 	.then((response) => { 
-		console.log(response)
+		coin = response.shift();
+		coin = str(coin.toLowerCase());
 
+		console.log(response);
 		candleSeries.setData(response);
 	})
 
-var binanceSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@kline_15m');
+
+
+// this is a comment
+// this is how we get the live data
+// this however, needs to change
+
+var binanceSocket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin}usdt@kline_15m`);
 
 binanceSocket.onmessage = function (event) {
 	console.log(event.data);
@@ -63,9 +78,5 @@ binanceSocket.onmessage = function (event) {
 		low: candlestick.l,
 		close: candlestick.c
 	});
-
-
-
-
 }
 

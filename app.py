@@ -1,5 +1,7 @@
 from typing import ChainMap
-from flask import *
+from flask.app import *
+from flask.templating import render_template
+from flask import jsonify
 from os import write
 from binance.helpers import interval_to_milliseconds
 import config, csv
@@ -11,7 +13,7 @@ from binance_testing import *
 app = Flask(__name__)
 client = Client(config.API_KEY, config.API_SECRET, tld='us')
 
-
+# pages
 
 @app.route("/")
 def index():
@@ -22,8 +24,17 @@ def index():
 
     return render_template('index.html', title=title, my_balances=balances)
 
+@app.route("/wsbscraper")
+def wsb_scraper():
+    title= 'wsb scraper'
+    return render_template('wsbscraper.html', title=title)
+
+
+
+
+
 # other endpoints
-@app.route("/buy")
+@app.route("/buy", methods=['GET', 'POST'])
 def buy():
     return 'pasta'
 
@@ -31,10 +42,12 @@ def buy():
 def sell():
     return 'selling'
 
+
+
+# this is where the data for chart is stored
 @app.route('/history')
 def history():
-
-    processed_candlesticks = []
+    processed_candlesticks = [coin]
     for data in candlesticks:
         candlestick = { 
             'time': data[0] / 1000, 
@@ -46,4 +59,4 @@ def history():
         processed_candlesticks.append(candlestick)
 
     return jsonify(processed_candlesticks)
-    
+

@@ -1,6 +1,4 @@
 from numpy.ma.core import append
-from pandas.core.indexes.base import Index
-from sklearn.linear_model import LinearRegression
 import numpy as np
 from numpy.ma import diff
 import pandas as pd
@@ -8,35 +6,47 @@ import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.stattools import adfuller, pacf
 from statsmodels.tsa.arima_model import ARIMA
-plt.figure(figsize=(12,6))
+import config
+import csv
+from binance.client import Client
+from binance.enums import *
+from datetime import datetime
+
+# plt.figure(figsize=(12,6))
 
 
 # parameters
 
+
 coin = 'BTC'
-x_tick_control = 500
-forecast_steps = 3
+interval = Client.KLINE_INTERVAL_1HOUR
+forecast_steps = 0
+additional_forecast_steps = 2
+p, d, q = 0, 1, 1
 
 
 
 
 # getting data
 
-data = pd.read_csv(f'historical_data/Binance_{coin}USDT_1h.csv')
+client = Client(config.API_KEY, config.API_SECRET, tld='us')
 
+coin_data = open(f"historical_data/{coin}_{interval}.csv", 'w', newline='')
 
-dates = [date[:13] for date in data['date']]
-closes = [i for i in data['close']]
-real = pd.Series(closes, index=dates)
-ticks = [date for index, date in enumerate(dates) if index % x_tick_control == 0]
+candlestick_writer = csv.writer(coin_data, delimiter=',')
+# we pass in get hist klines with no end date, which will default to the most recent info
+candlestick_data = client.get_historical_klines(f'{coin}USDT', interval, '1 Jan, 2021')
+# returns "generator of T O H L C V values"
+closes = []
+dates = []
+for candlestick in candlestick_data:
+    candlestick[0] = int(candlestick[0] / 1000)
+    candlestick[0] = datetime.utcfromtimestamp(candlestick[0])
+    dates.append(candlestick[0])
+    closes.append(float(candlestick[4]))
+    candlestick_writer.writerow(candlestick)
 
-# creating x_hr chart, bc we are using hourly data
-x = 4
-x_hr = real.iloc[::x]
-
-
-
-
+real = pd.Series(closes, dates)
 
 
 # stationarizing, differencing, adf
@@ -52,29 +62,25 @@ def differencing(series, lag):
     return diff_closes
 
 differenced = differencing(real.values, 1)
-
-differenced_x_hr = differencing(x_hr.values, 1)
  
 differenced = pd.Series(differenced, dates)
-differenced_x_hr = pd.Series(differenced_x_hr, x_hr.index)
 
-""" 
-result = adfuller(differenced_x_hr)
+# adf, pacf and acf tests
+"""
+result = adfuller(differenced.values)
 print(f'ADF stat: {result[0]}')
 print(f'p-value : {result[1]}')
 for key, value in result[4].items():
     print(f'{key}, {value}')
-"""
+
+plot_pacf(differenced) # this is for finding p
+plot_acf(differenced) # this is for finding q
+plt.show() 
 
 
+""" 
 
 
-
-
-
-
-
-# Model
 
 # we use this fxn will add back whatever difference we took off
 # needed for any model that was differenced for stationarity
@@ -87,31 +93,37 @@ def inverse_differencing(prediction_series, original_series):
     return diff_added_back
 
 
-train = differenced_x_hr[:-30].values
-test = differenced_x_hr[-30:].values
+train = differenced[:-30].values
+test = differenced[-30:].values
 
-model = ARIMA(train, order=(3,1,3))
+
+
+
+
+model = ARIMA(train, order=(8,1,8))
+
+
+
+
+
 model_fit = model.fit()
-
 start = len(train)
-plot_end = len(x_hr) - 1
-
+plot_end = len(differenced) - 1 + additional_forecast_steps
 pred = model_fit.predict(start=start, end=plot_end)
-
-pred = inverse_differencing(pred, list(x_hr.values[-30:-forecast_steps + 1]))
+pred = inverse_differencing(pred, list(real.values[-30:]))
 
 
 # recombining differences to put ARIMA in original env and plotting
 # making a masked array so we can see what steps in the plot are true out-of-sample forecasts
-zeroarray = [0] * (len(x_hr.values[-30:]) - forecast_steps)
+zeroarray = [0] * (len(real.values[-30:]) - forecast_steps)
 for _ in range(0, forecast_steps):
     zeroarray.append(1)
-my_array = x_hr.values[-30:]
+my_array = real.values[-30:]
 masked = np.ma.array(my_array, mask=zeroarray)
 
 
-plt.plot(x_hr.values[-30:], color='c', label='real')
-plt.plot(masked, color='m')
+plt.plot(real[-30:].values, color='c', label='real')
+# plt.plot(masked, color='m')
 
 plt.plot(pred, color='y', label='ARIMA fit')
 # plt.xticks(ticks=ticks)

@@ -10,38 +10,15 @@ import backtrader as bt
 
 client = Client(config.API_KEY, config.API_SECRET, tld='us')
 
+coin = 'ETH'
+interval = Client.KLINE_INTERVAL_4HOUR
 
-BTC_1_day_testarooni = open("BTC_1_day_testarooni.csv", 'w', newline='')
+coin_1_day = open(f"{coin}_{interval}.csv", 'w', newline='')
 
-candlestick_writer = csv.writer(BTC_1_day_testarooni, delimiter=',')
-candlesticks = client.get_historical_klines('BTCUSDT', Client.KLINE_INTERVAL_1DAY, '1 Jan, 2018', '1 May, 2021')
+candlestick_writer = csv.writer(coin_1_day, delimiter=',')
+candlesticks = client.get_historical_klines(f'{coin}USDT', interval, '1 Jan, 2021', '1 May, 2021')
 
 for candlestick in candlesticks:
     candlestick[0] = candlestick[0] / 1000
     candlestick_writer.writerow(candlestick)
 
-print(len(candlesticks))
-BTC_1_day_testarooni.close()
-
-
-class RSIStrategy(bt.Strategy):
-    def __init__(self):
-        self.rsi = bt.talib.RSI(self.data, period=14)
-
-    def next(self):
-        if self.rsi < 30 and not self.position:
-            self.buy(size=0.1)
-        if self.rsi > 70 and self.position:
-            self.close()
-
-cerebro = bt.Cerebro()
-
-data = bt.feeds.GenericCSVData(dataname='BTC_1_day_testarooni.csv', dtformat=2)
-
-cerebro.adddata(data)
-
-cerebro.addstrategy(RSIStrategy)
-
-# cerebro.run()
-
-# cerebro.plot()
