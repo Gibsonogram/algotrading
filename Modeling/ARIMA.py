@@ -1,41 +1,37 @@
-from numpy.ma.core import append
-import numpy as np
-from numpy.ma import diff
+from pmdarima import auto_arima
 import pandas as pd
 import matplotlib.pyplot as plt
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.stattools import adfuller, pacf
-from statsmodels.tsa.arima_model import ARIMA
-import config
+from statsmodels.tsa.arima.model import ARIMA
+from config import API_SECRET, API_KEY
 import csv
 from binance.client import Client
 from binance.enums import *
 from datetime import datetime
 
-# plt.figure(figsize=(12,6))
+plt.figure(figsize=(12,6))
 
 
-# parameters
-
-
-coin = 'BTC'
+coin = 'REP'
 interval = Client.KLINE_INTERVAL_1HOUR
-forecast_steps = 0
-additional_forecast_steps = 2
-p, d, q = 0, 1, 1
+in_sample_forecast_steps = 0
+out_sample_forecast_steps = 2
+p, d, q = 1,1,1
+graph_size = 20
+if d == 1:
+    variance = -10
+else:
+    variance = 1
 
 
 
 
 # getting data
 
-client = Client(config.API_KEY, config.API_SECRET, tld='us')
-
+client = Client(API_KEY, API_SECRET, tld='us')
 coin_data = open(f"historical_data/{coin}_{interval}.csv", 'w', newline='')
-
 candlestick_writer = csv.writer(coin_data, delimiter=',')
 # we pass in get hist klines with no end date, which will default to the most recent info
-candlestick_data = client.get_historical_klines(f'{coin}USDT', interval, '1 Jan, 2021')
+candlestick_data = client.get_historical_klines(f'{coin}USD', interval, '1 Mar, 2021')
 # returns "generator of T O H L C V values"
 closes = []
 dates = []
@@ -46,86 +42,40 @@ for candlestick in candlestick_data:
     closes.append(float(candlestick[4]))
     candlestick_writer.writerow(candlestick)
 
-real = pd.Series(closes, dates)
+# these two lines are to shift into my timezone... just so I don't go crazy
+dates = dates[:-6]
+closes = closes[6:]
 
-
-# stationarizing, differencing, adf
-
-def differencing(series, lag):
-    diff_closes = []
-    for index, close in enumerate(series):
-        if index >= lag:
-            diff_close = series[index] - series[index - lag]
-            diff_closes.append(diff_close)
-        else:
-            diff_closes.append(0)
-    return diff_closes
-
-differenced = differencing(real.values, 1)
- 
-differenced = pd.Series(differenced, dates)
-
-# adf, pacf and acf tests
-"""
-result = adfuller(differenced.values)
-print(f'ADF stat: {result[0]}')
-print(f'p-value : {result[1]}')
-for key, value in result[4].items():
-    print(f'{key}, {value}')
-
-plot_pacf(differenced) # this is for finding p
-plot_acf(differenced) # this is for finding q
-plt.show() 
-
-
-""" 
+real = pd.Series(closes[:-(1+in_sample_forecast_steps)], dates[:-(1+in_sample_forecast_steps)])
+real2 = pd.Series(closes, dates)
+differenced = real.diff()
+differenced = differenced.dropna()
 
 
 
-# we use this fxn will add back whatever difference we took off
-# needed for any model that was differenced for stationarity
-def inverse_differencing(prediction_series, original_series):
-    diff_added_back = []
-    for index, val in enumerate(prediction_series):
-        if index >= len(original_series):
-            original_series.append(original_series[-1] + val)
-        diff_added_back.append(original_series[index] + val)
-    return diff_added_back
-
-
-train = differenced[:-30].values
-test = differenced[-30:].values
-
-
-
-
-
-model = ARIMA(train, order=(8,1,8))
-
-
-
-
-
+model = ARIMA(differenced, order=(p,d,q))
 model_fit = model.fit()
-start = len(train)
-plot_end = len(differenced) - 1 + additional_forecast_steps
-pred = model_fit.predict(start=start, end=plot_end)
-pred = inverse_differencing(pred, list(real.values[-30:]))
+
+forecast = model_fit.forecast(steps=(1 + in_sample_forecast_steps + out_sample_forecast_steps))
+
+# need some kind of multiplier based on the variance
+# moving average of variance
+ls = []
+for index, val in enumerate(forecast.values):
+    if index == 0:
+        new = real.values[-1] + (val * variance)
+    else:
+        new = (val * variance) + ls[-1]
+    ls.append(new)
+forecast = pd.Series(ls, forecast.index)
+forecast = pd.concat([real[-1:], forecast])
 
 
-# recombining differences to put ARIMA in original env and plotting
-# making a masked array so we can see what steps in the plot are true out-of-sample forecasts
-zeroarray = [0] * (len(real.values[-30:]) - forecast_steps)
-for _ in range(0, forecast_steps):
-    zeroarray.append(1)
-my_array = real.values[-30:]
-masked = np.ma.array(my_array, mask=zeroarray)
+plt.plot(real[-graph_size:], color='black', label='real')
+plt.plot(forecast, color='red', label='arima forecast')
 
-
-plt.plot(real[-30:].values, color='c', label='real')
-# plt.plot(masked, color='m')
-
-plt.plot(pred, color='y', label='ARIMA fit')
-# plt.xticks(ticks=ticks)
+# this is the one data point that isn't determined yet.
+plt.plot(real2[-(in_sample_forecast_steps+2):], color='blue', label='current candle')
 plt.legend(loc='best')
+plt.title(f'{coin}')
 plt.show()

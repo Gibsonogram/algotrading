@@ -1,28 +1,39 @@
 from typing import ChainMap
 from flask.app import *
 from flask.templating import render_template
-from flask import jsonify
-from os import write
-from binance.helpers import interval_to_milliseconds
+from flask import jsonify, redirect, url_for, request
 import config, csv
-from binance.client import Client
-from binance.enums import *
-from binance_testing import *
+# from binance.client import Client
+# from binance.enums import *
+# from binance_testing import *
 
 
 app = Flask(__name__)
-client = Client(config.API_KEY, config.API_SECRET, tld='us')
+# client = Client(config.API_KEY, config.API_SECRET, tld='us')
 
 # pages
 
 @app.route("/")
 def index():
-    title= 'Coinview'
-    print(client)
-    info = client.get_account()
-    balances = info['balances']
 
-    return render_template('index.html', title=title, my_balances=balances)
+    # title= 'Coinview'
+    # print(client)
+    # info = client.get_account()
+    # balances = info['balances']
+
+    return render_template('index.html')
+
+@app.route("/twopol", methods=['GET', 'POST'])
+def two_col():
+    title= 'two col'
+    if request.method == 'POST':
+        # do stuff when the form is submitted
+
+        # redirect to end the POST handling
+        # the redirect can be to the same route or somewhere else
+        return redirect(url_for('index'))
+    return render_template('two_col.html', title=title)
+
 
 @app.route("/wsbscraper")
 def wsb_scraper():
@@ -30,9 +41,7 @@ def wsb_scraper():
     return render_template('wsbscraper.html', title=title)
 
 
-
-
-
+"""
 # other endpoints
 @app.route("/buy", methods=['GET', 'POST'])
 def buy():
@@ -41,7 +50,6 @@ def buy():
 @app.route('/sell')
 def sell():
     return 'selling'
-
 
 
 # this is where the data for chart is stored
@@ -59,4 +67,4 @@ def history():
         processed_candlesticks.append(candlestick)
 
     return jsonify(processed_candlesticks)
-
+ """

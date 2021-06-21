@@ -3,6 +3,18 @@ import pandas as pd
 
 
 
+def moving_average(values, period):
+    if len(values) < period - 1:
+        return print('period is longer than the list')
+    # we use (period - 1) because index starts at 0
+    if len(values) >= period - 1:
+        period_sum = 0
+        for i in range(0, period):
+            period_sum += values[-1 - i]
+        mov_av = round(period_sum / period, 1)
+
+    return mov_av
+
 
 def ES(series, num_terms, alpha):
     ES_list = []
@@ -59,4 +71,24 @@ def ES_with_pred(series, num_terms, alpha, prediction_horizon=3):
         return 'alpha must be between (0,1)'
 
 
+def differencing(series, lag):
+    diff_closes = []
+    for index, close in enumerate(series):
+        if index >= lag:
+            diff_close = series[index] - series[index - lag]
+            diff_closes.append(diff_close)
+        else:
+            diff_closes.append(0)
+    return diff_closes
 
+
+def inverse_differencing(prediction_series, original_series):
+    diff_added_back = []
+    for index, val in enumerate(prediction_series):
+        if index >= len(original_series):
+            true_pred = original_series[-1] + val
+            ma_period = 3
+            ma_factor = moving_average(original_series[-ma_period:], ma_period) / original_series[-ma_period]
+            original_series.append(true_pred * ma_factor)
+        diff_added_back.append(original_series[index] + val)
+    return diff_added_back

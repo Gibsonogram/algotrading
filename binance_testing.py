@@ -1,6 +1,7 @@
 from os import write
 from binance.helpers import interval_to_milliseconds
-import config, csv
+import csv
+from Modeling.config import API_KEY, API_SECRET
 from binance.client import Client
 from binance.enums import *
 import numpy as np
@@ -8,7 +9,7 @@ import pandas as pd
 import backtrader as bt
 
 
-client = Client(config.API_KEY, config.API_SECRET, tld='us')
+client = Client(API_KEY, API_SECRET, tld='us')
 
 coin = 'ETH'
 interval = Client.KLINE_INTERVAL_4HOUR
