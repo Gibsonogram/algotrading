@@ -6,8 +6,6 @@ from binance.client import Client
 from binance.enums import *
 import numpy as np
 import pandas as pd
-import backtrader as bt
-
 
 client = Client(API_KEY, API_SECRET, tld='us')
 

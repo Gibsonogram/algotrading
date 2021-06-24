@@ -38,9 +38,6 @@ var candleSeries = chart.addCandlestickSeries({
   wickUpColor: 'rgba(0, 240, 0, 1)',
 });
 
-var coin;
-
-
 // this is how we get the older history data, stored at this url
 // importantly, it fetches whatever is at that url, so we need not change anything here
 // we need only consider what is at that url
@@ -48,14 +45,11 @@ var coin;
 fetch('http://127.0.0.1:5000/history')
 	.then((r) => r.json())
 	.then((response) => { 
-		coin = response.shift();
-		coin = str(coin.toLowerCase());
-
 		console.log(response);
 		candleSeries.setData(response);
 	})
 
-
+var coin = 'btc'
 
 // this is a comment
 // this is how we get the live data

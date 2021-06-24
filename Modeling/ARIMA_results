@@ -1,0 +1,11 @@
+Documenting what arima fits work because why would I not keep a record of these, 
+instead of figuring it out from scratch each time.
+
+HOURLY TESTS
+BTC hourly = 4,1,4
+ETH hourly = 2,1,2
+PAXG hourly = 1,0,1
+
+
+BTC 12 hour = 1,1,1
+BTC daily = 12,1,12

@@ -3,9 +3,9 @@ from flask.app import *
 from flask.templating import render_template
 from flask import jsonify, redirect, url_for, request
 import config, csv
-# from binance.client import Client
-# from binance.enums import *
-# from binance_testing import *
+from binance.client import Client
+from binance.enums import *
+from binance_testing import *
 
 
 app = Flask(__name__)
@@ -23,7 +23,7 @@ def index():
 
     return render_template('index.html')
 
-@app.route("/twopol", methods=['GET', 'POST'])
+@app.route("/twocol", methods=['GET', 'POST'])
 def two_col():
     title= 'two col'
     if request.method == 'POST':
@@ -41,17 +41,6 @@ def wsb_scraper():
     return render_template('wsbscraper.html', title=title)
 
 
-"""
-# other endpoints
-@app.route("/buy", methods=['GET', 'POST'])
-def buy():
-    return 'pasta'
-
-@app.route('/sell')
-def sell():
-    return 'selling'
-
-
 # this is where the data for chart is stored
 @app.route('/history')
 def history():
@@ -67,4 +56,9 @@ def history():
         processed_candlesticks.append(candlestick)
 
     return jsonify(processed_candlesticks)
- """
+
+
+
+
+# kill $(pgrep -f flask)
+# this kills all live flask servers

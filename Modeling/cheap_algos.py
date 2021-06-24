@@ -92,3 +92,9 @@ def inverse_differencing(prediction_series, original_series):
             original_series.append(true_pred * ma_factor)
         diff_added_back.append(original_series[index] + val)
     return diff_added_back
+
+
+def momentum(values):
+    average = sum(values) / len(values)
+    return round(values[-1] / average, 2)
+

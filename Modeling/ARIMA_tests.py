@@ -11,9 +11,9 @@ from datetime import datetime
 
 
 # params
-coin = 'REP'
-interval = Client.KLINE_INTERVAL_1HOUR
-p,d,q = 1,1,1
+coin = 'BTC'
+interval = Client.KLINE_INTERVAL_1DAY
+p,d,q = 2,0,2
 
 
 # getting data
@@ -37,6 +37,10 @@ closes = closes[6:]
 real = pd.Series(closes, dates)
 differenced = real.diff()
 differenced = differenced.dropna()
+
+differenced_cumsum = differenced.cumsum()
+factor = round(real.values[-1] / differenced_cumsum[-1], 2)
+print(factor)
 
 
 model = ARIMA(differenced, order=(p,d,q))
