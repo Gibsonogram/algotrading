@@ -8,19 +8,20 @@ import csv
 from binance.client import Client
 from binance.enums import *
 from datetime import datetime
+from cheap_algos import *
 
 
 # params
 coin = 'BTC'
-interval = Client.KLINE_INTERVAL_1DAY
-p,d,q = 2,0,2
+interval = Client.KLINE_INTERVAL_12HOUR
+p,d,q = 12,1,1
 
 
 # getting data
 client = Client(API_KEY, API_SECRET, tld='us')
 coin_data = open(f"historical_data/{coin}_{interval}.csv", 'w', newline='')
 candlestick_writer = csv.writer(coin_data, delimiter=',')
-candlestick_data = client.get_historical_klines(f'{coin}USD', interval, '1 Mar, 2021')
+candlestick_data = client.get_historical_klines(f'{coin}USD', interval, '1 Jan, 2020')
 closes = []
 dates = []
 for candlestick in candlestick_data:
@@ -46,6 +47,8 @@ print(factor)
 model = ARIMA(differenced, order=(p,d,q))
 model_fit = model.fit()
 print(model_fit.summary())
+
+
 
 
 # tests

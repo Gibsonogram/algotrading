@@ -98,3 +98,7 @@ def momentum(values):
     average = sum(values) / len(values)
     return round(values[-1] / average, 2)
 
+
+def MAPE(forecasted, actual):
+    penis = abs(actual - forecasted) / actual
+    return round(penis* 100, 2)
