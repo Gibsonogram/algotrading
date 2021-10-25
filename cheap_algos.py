@@ -95,10 +95,16 @@ def inverse_differencing(prediction_series, original_series):
 
 
 def momentum(values):
-    average = sum(values) / len(values)
+    average = np.average(values)
     return round(values[-1] / average, 2)
 
 
 def MAPE(forecasted, actual):
     penis = abs(actual - forecasted) / actual
     return round(penis* 100, 2)
+
+
+def percent_change(initial, final):
+    return round((final - initial) / abs(initial) * 100.00, 3)
+
+

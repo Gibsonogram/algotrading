@@ -16,7 +16,7 @@ sell_perc = 0
 # this gets the keys from config.py file which is .gitignored for my safety.
 client = Client(config.API_KEY, config.API_SECRET, tld='us')
 
-
+""" 
 # The following function gets newest price historical_data of the coins I want to check
 def coin_prices():
     coin_array = []
@@ -38,24 +38,6 @@ def coin_prices():
     return coin_array
 
 
-def moving_average(values, period):
-    if len(values) < period - 1:
-        return print('period is longer than the list')
-    # we use (period - 1) because index starts at 0
-    if len(values) >= period - 1:
-        period_sum = 0
-        for i in range(0, period):
-            period_sum += values[-1 - i]
-        mov_av = period_sum / period
-        mov_av_change = round(((mov_av - values[-period]) / values[-period]) * 100, 4)
-
-    return mov_av_change
-
-
-def percent_change(initial, final):
-    return round((final - initial) / initial * 100, 3)
-
-
 def order(side, quantity, symbol, order_type=ORDER_TYPE_MARKET):
 
     global my_order
@@ -66,7 +48,7 @@ def order(side, quantity, symbol, order_type=ORDER_TYPE_MARKET):
         print('buy failed')
         raise Exception
 
-
+"""
 real_trading = False
 
 new_row = True
@@ -76,14 +58,14 @@ buy_column = 0
 buy_price = 0
 buy_amount = 0
 wait_minutes = 60 * wait_minutes
-
-first_coin_array = coin_prices()
+""" 
+#first_coin_array = coin_prices()
 history = pd.DataFrame(first_coin_array)
 history = history.transpose()
 history = history.drop(1, axis=0)
 false_history = pd.DataFrame()
-
-
+ """
+""" 
 def shaka(betting_money, sell_percent):
     # run the coin_prices fxn and get a price list
     global history
@@ -250,3 +232,4 @@ def shaka(betting_money, sell_percent):
 while True:
     shaka(starting_money, sell_perc)
     time.sleep(wait_minutes)
+"""
