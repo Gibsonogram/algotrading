@@ -2,29 +2,26 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from cheap_algos import percent_change
+from Backtesting.cheap_algos import percent_change
+
 
 
 # params
 week_num = 104
-starting_capital = 500
+starting_capital = 200
 
 
 weeks = np.arange(0,week_num)
-mean_x1, std_x1 = 0.0274, 0.299
-mean_x2, std_x2 = 0.0224, 0.227
+mean_x1, std_x1 = 0.0774, 0.085
+mean_x2, std_x2 = 0.0311, 0.076
 x1 = np.random.normal(loc=mean_x1, scale=std_x1, size=(2, week_num))
 x2 = np.random.normal(loc=mean_x2, scale=std_x2, size=(2, week_num))
 
-""" 
-x1:
-Holding 1 days, Sell_pc = 90%
-x_highest: 4
-Expected value[week - fees] = 2.35%
-Profits 52.0% of the time.
-Standard deviation: 0.232
 
-x2:
+""" 
+
+Crypto Momentum strategy
+
 Holding 1 days, Sell_pc = 90%
 x_highest: 5
 Expected value[week - fees] = 1.76%
@@ -49,19 +46,33 @@ for week in weeks:
     f.append(f_gets)
     g.append(g_gets)
     h.append(h_gets)
+    i.append(i_gets)
 
 
-exp1 = [starting_capital*(1+mean_x1)**week for week in weeks]
-#exp2 = [starting_capital*(1+mean_x2)**week for week in weeks]
+exp1 = [starting_capital*(1 + mean_x1)**week for week in weeks]
 
+
+
+crypto, spy = [],[]
+add_amount = 100
+for week in weeks:
+    if week % 14 == 0:
+        starting_capital += add_amount
+    crypto.append(starting_capital*(1+mean_x1)**week)
+    spy.append(starting_capital*(1+mean_x2)**week)
+
+
+
+#annual_crypto_profit = percent_change(crypto[0], crypto[55])
+#annual_spy_profit = percent_change(spy[0], spy[55])
+#print(spy[55], crypto[55])
 
 plt.figure(figsize=(10,5))
-plt.plot(exp1, label='Continuous x1')
-#plt.plot(exp2, label='Continuous x2')
-plt.plot(f, label='random x1')
-plt.plot(g, label='random x1')
-#plt.plot(h, label='random x2')
-#plt.plot(i, label='random x2')
-
+plt.plot(exp1[:56], label='Continuous Crypto Profits')
+#plt.plot(spy, label='Continuous SPY profits')
+plt.plot(f[:56], label='random walk crypto')
+plt.plot(g[:56], label='random walk crypto')
+#plt.plot(h, label='random walk SPY')
+#plt.plot(i, label='random walk SPY')
 plt.legend(loc='best')
 plt.show()
